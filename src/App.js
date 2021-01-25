@@ -13,7 +13,7 @@ import "./App.css";
 import * as tf from "@tensorflow/tfjs";
 import * as posenet from "@tensorflow-models/posenet";
 import Webcam from "react-webcam";
-import Displaysquats from "./displaysquats";
+
 import { drawKeypoints, drawSkeleton } from "./utilities";
 
 function find_angle(A, B, C) {
@@ -36,12 +36,12 @@ function App() {
   const runPosenet = async () => {
     const net = await posenet.load({
       inputResolution: { width: 640, height: 480 },
-      scale: 0.6,
+      scale: 0.5,
     });
     //
     setInterval(() => {
       detect(net);
-    }, 500);
+    }, 600);
   };
 
   var detect = async (net) => {
@@ -103,20 +103,20 @@ function App() {
 
           squates += 1;
 
-          console.log(pose["keypoints"][12]["position"]);
+          //console.log(pose["keypoints"][12]["position"]);
           // console.log(pose["keypoints"][12]["position"]);
-          console.log(pose["keypoints"][14]["position"]);
-          console.log(pose["keypoints"][16]["position"]);
+          //console.log(pose["keypoints"][14]["position"]);
+          //console.log(pose["keypoints"][16]["position"]);
         }
         prev_to_prev = prev_angle;
         prev_angle = current;
       }
       prev_to_prev = prev_angle;
       prev_angle = current;
-      console.log("squat");
-      console.log(squates);
+      //console.log("squat");
+      //console.log(squates);
       // setsquatcount(squatcount + 1);
-      console.log("-----------------------------");
+      //console.log("-----------------------------");
 
       drawCanvas(pose, video, videoWidth, videoHeight, canvasRef);
     }
