@@ -166,8 +166,8 @@ function App() {
           }}
         />
       </header>
-
-      <h1>{squatcount}</h1>
+      <h1>"Number of squats"</h1>
+      <h2>{squatcount}</h2>
     </div>
   );
 }
