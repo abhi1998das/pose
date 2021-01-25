@@ -8,29 +8,43 @@
 // 8. Draw functions DONE
 
 import React, { useRef } from "react";
+import { useState } from "react";
 import "./App.css";
 import * as tf from "@tensorflow/tfjs";
 import * as posenet from "@tensorflow-models/posenet";
 import Webcam from "react-webcam";
+import Displaysquats from "./displaysquats";
 import { drawKeypoints, drawSkeleton } from "./utilities";
 
+function find_angle(A, B, C) {
+  var AB = Math.sqrt(Math.pow(B.x - A.x, 2) + Math.pow(B.y - A.y, 2));
+  var BC = Math.sqrt(Math.pow(B.x - C.x, 2) + Math.pow(B.y - C.y, 2));
+  var AC = Math.sqrt(Math.pow(C.x - A.x, 2) + Math.pow(C.y - A.y, 2));
+  return Math.acos((BC * BC + AB * AB - AC * AC) / (2 * BC * AB));
+}
+
+var prev_angle = 86;
+var squates = 0;
+var prev_to_prev = 98;
 function App() {
+  const [squatcount, setsquatcount] = useState(0);
   const webcamRef = useRef(null);
   const canvasRef = useRef(null);
+  var flag = 0;
 
   //  Load posenet
   const runPosenet = async () => {
     const net = await posenet.load({
       inputResolution: { width: 640, height: 480 },
-      scale: 0.8,
+      scale: 0.6,
     });
     //
     setInterval(() => {
       detect(net);
-    }, 100);
+    }, 500);
   };
 
-  const detect = async (net) => {
+  var detect = async (net) => {
     if (
       typeof webcamRef.current !== "undefined" &&
       webcamRef.current !== null &&
@@ -47,7 +61,62 @@ function App() {
 
       // Make Detections
       const pose = await net.estimateSinglePose(video);
-      console.log(pose);
+      //console.log(pose["keypoints"]);
+      //console.log(pose["keypoints"][11]["position"]);
+      // console.log(pose["keypoints"][11]["position"]);
+      // console.log(pose["keypoints"][12]["position"]);
+      //console.log(pose["keypoints"][13]["position"]);
+      //console.log(pose["keypoints"][15]["position"]);
+
+      var current = 78;
+      var temp =
+        (find_angle(
+          pose["keypoints"][12]["position"],
+          pose["keypoints"][14]["position"],
+          pose["keypoints"][16]["position"]
+        ) *
+          180) /
+        Math.PI;
+
+      if (temp < 75) {
+        current = 1;
+      } else {
+        current = 0;
+      }
+
+      console.log(pose["keypoints"][12]["score"]);
+      console.log(pose["keypoints"][14]["score"]);
+      console.log(pose["keypoints"][16]["score"]);
+      //console.log(temp2);
+      // console.log(squates);
+
+      //console.log(prev_to_prev);
+      //console.log(prev_angle);
+      console.log(current);
+      if (
+        pose["keypoints"][12]["score"] >= 0.5 &&
+        pose["keypoints"][14]["score"] >= 0.5
+      ) {
+        console.log("yes");
+        if (prev_angle == 1 && current == 0) {
+          setsquatcount(squatcount + 1);
+
+          squates += 1;
+
+          console.log(pose["keypoints"][12]["position"]);
+          // console.log(pose["keypoints"][12]["position"]);
+          console.log(pose["keypoints"][14]["position"]);
+          console.log(pose["keypoints"][16]["position"]);
+        }
+        prev_to_prev = prev_angle;
+        prev_angle = current;
+      }
+      prev_to_prev = prev_angle;
+      prev_angle = current;
+      console.log("squat");
+      console.log(squates);
+      // setsquatcount(squatcount + 1);
+      console.log("-----------------------------");
 
       drawCanvas(pose, video, videoWidth, videoHeight, canvasRef);
     }
@@ -97,6 +166,8 @@ function App() {
           }}
         />
       </header>
+
+      <h1>{squatcount}</h1>
     </div>
   );
 }
